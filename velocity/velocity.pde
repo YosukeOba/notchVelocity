@@ -2,11 +2,18 @@ String filename = "";
 
 
 
-float  [] average = new float [100];
+double [] average = new double [100];
 
 int [] count = new int [100];
 
+int aveNum = 0;
+float currentAveSum = 0;
+float currentAveCount = 0;
+
 void setup(){
+  for(int i = 0; i < 100; i++){
+    average[i] = 0;
+  }
   size(1500, 1500);
   background(255);
   int A = 350; //350,700
@@ -24,7 +31,7 @@ void setup(){
     }
   }
   
-  float max = 0;
+  double max = 0;
   int maxi = 0;
   
   for(int i = 0; i < 100; i++){
@@ -39,15 +46,15 @@ void setup(){
     println(average[i] + "," + count[i]);
   }
   
-  println("max = " + str(max));
+  println("max = " + (max));
   println("maxi = " + str(maxi));
   
-  float lastAverage = 0;
+  double lastAverage = 0;
   
   for(int i = 0; i < 100; i++){
     stroke(0,0,255);
     strokeWeight(5);
-    line(i*15, 1500-lastAverage*50, (i+1)*15, 1500-average[i]*50);
+    line(i*15, (float)(1500-lastAverage*50), (i+1)*15, (float)(1500-average[i]*50));
     lastAverage = average[i];
   }
   
@@ -59,7 +66,7 @@ void drawVelocity(int participant, int set, int task, int A, int W, int I, int S
   filename = str(participant)+ "/" +str(participant) + "_" + str(set) + "_" + str(task) + ".txt";
   String [] lines = loadStrings(filename);
   float lastVelocity = 0;
-  float psum = 0.0;
+  double psum = 0.0;
   
   String [] firstList = split(lines[0], ",");
   if(int(firstList[1]) != A || int(firstList[2]) != W || int(firstList[3]) != I || int(firstList[4]) != S || int(firstList[5]) != C){
@@ -72,7 +79,9 @@ void drawVelocity(int participant, int set, int task, int A, int W, int I, int S
   }
   
   int mt = int(endList[6])-int(firstList[6]);
-  float ppms = 100.0/mt;  
+  double ppms = 100.0/mt;
+  
+  aveNum = 0;
   
   for(int k = 1; k < lines.length - 1; k++){
     String [] lastList = split(lines[k-1], ",");
@@ -82,14 +91,37 @@ void drawVelocity(int participant, int set, int task, int A, int W, int I, int S
     int ms = int(list[6])-int(lastList[6]);
     
     float v = distance/ms;
+    double vv = distance/ms;
     
-    float thisP = ppms * ms;
+    double thisP = ppms * ms;
     
-    average[int(psum+thisP)] = average[int(psum+thisP)] + v;
-    count[int(psum+thisP)]++;
+    if(aveNum == (int)(psum+thisP)){
+      //print((int)(psum+thisP));
+      //print("a");
+      //print(vv);
+      currentAveSum += vv;
+      currentAveCount += 1;
+    } else {
+      //print("b");
+      //print(currentAveSum);
+      //println(currentAveCount);
+      if(currentAveCount != 0){
+        average[aveNum] = average[aveNum] + (currentAveSum / currentAveCount);
+        if(currentAveSum / currentAveCount != currentAveSum / currentAveCount){
+          print(aveNum);
+        }
+        count[aveNum]++;
+      }
+      aveNum = (int)(psum+thisP);
+      currentAveSum = 0;
+      currentAveCount = 0;
+    }
+    
+    //average[int(psum+thisP)] = average[int(psum+thisP)] + v;
+    //count[int(psum+thisP)]++;
     
     stroke(255,0,0);
-    line(psum*15, 1500-lastVelocity*50, psum*15+thisP*15, 1500-v*50);
+    line((float)(psum*15), 1500-lastVelocity*50, (float)(psum*15+thisP*15), 1500-v*50);
     
     psum += thisP;
     lastVelocity = v;
